@@ -546,3 +546,5 @@ E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\refi
 E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\AIHubTaskTracker.pdb
 E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\AIHubTaskTracker.genruntimeconfig.cache
 E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\ref\AIHubTaskTracker.dll
+E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\bin\Debug\net8.0\BCrypt.Net-Next.dll
+E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
