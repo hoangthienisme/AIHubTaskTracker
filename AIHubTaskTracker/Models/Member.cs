@@ -33,9 +33,11 @@ namespace AIHubTaskTracker.Models
 
         public DateTime created_at { get; set; } = DateTime.Now; //  Ngày tạo tài khoản
         public DateTime updated_at { get; set; } = DateTime.Now; //  Ngày cập nhật gần nhất
+		[MaxLength(50)]
+		public string? clickup_id { get; set; } // 🔥 THÊM dòng này
 
-        // Navigation properties
-        [JsonIgnore]
+		// Navigation properties
+		[JsonIgnore]
         public ICollection<TaskItem> assigned_tasks { get; set; } = new List<TaskItem>(); //  Các task được giao cho user này
 
         [JsonIgnore]
