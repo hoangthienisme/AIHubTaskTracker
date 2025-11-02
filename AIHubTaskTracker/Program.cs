@@ -23,6 +23,7 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader());
 });
 builder.Services.AddSingleton<TelegramService>();
+builder.Services.AddHostedService<DailyLogJob>();
 // Controllers
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
