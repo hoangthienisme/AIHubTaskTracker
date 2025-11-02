@@ -67,7 +67,13 @@ public class TasksItemController : ControllerBase
 
         var oldStatus = task.status;
         var oldProgress = task.progress_percentage;
-
+        string NormalizeStatus(string? status) => status?.Trim().ToLower() switch
+        {
+            "todo" => "To Do",
+            "inprogress" => "In Progress",
+            "completed" => "Completed",
+            _ => task.status
+        };
         // Cập nhật dữ liệu
         task.title = dto.title ?? task.title;
         task.description = dto.description ?? task.description;
