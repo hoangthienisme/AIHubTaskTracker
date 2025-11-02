@@ -44,7 +44,7 @@
               "RelativeDocumentMoniker": "AIHubTaskTracker\\Controllers\\TaskItemController.cs",
               "ToolTip": "D:\\BE AIHUB\\AIHubTaskTracker\\AIHubTaskTracker\\Controllers\\TaskItemController.cs",
               "RelativeToolTip": "AIHubTaskTracker\\Controllers\\TaskItemController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAG0AAABHAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHUAAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-02T12:12:56.171Z",
               "IsPinned": true,
@@ -60,8 +60,7 @@
               "RelativeToolTip": "AIHubTaskTracker\\Services\\TelegramService.cs",
               "ViewState": "AgIAABIAAAAAAAAAAAAYwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-02T22:49:09.539Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-02T22:49:09.539Z"
             },
             {
               "$type": "Document",
@@ -73,8 +72,7 @@
               "RelativeToolTip": "AIHubTaskTracker\\Services\\DailyLogJob.cs",
               "ViewState": "AgIAADoAAAAAAAAAAADwv1wAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-02T22:14:52.961Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-02T22:14:52.961Z"
             },
             {
               "$type": "Document",

@@ -60,16 +60,15 @@ public class TasksItemController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] TaskUpdateDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] TaskUpdateDto dto, [FromQuery] bool fromClickUp = false)
     {
         var task = await _db.Tasks.FindAsync(id);
-        if (task == null) return NotFound(new { message = $"Task ID {id} không tồn tại." });
+        if (task == null)
+            return NotFound(new { message = $"Task ID {id} không tồn tại." });
 
-        // Lưu giá trị cũ để so sánh
         var oldStatus = task.status;
         var oldProgress = task.progress_percentage;
 
-        // Normalize status
         string NormalizeStatus(string? status) => status?.Trim().ToLower() switch
         {
             "todo" => "To Do",
@@ -79,18 +78,26 @@ public class TasksItemController : ControllerBase
             _ => task.status
         };
 
-        // Cập nhật các trường
         task.title = dto.title ?? task.title;
         task.description = dto.description ?? task.description;
         task.status = dto.status != null ? NormalizeStatus(dto.status) : task.status;
         task.expected_output = dto.expected_output ?? task.expected_output;
         task.deadline = dto.deadline ?? task.deadline;
-        task.progress_percentage = dto.progress_percentage ?? task.progress_percentage;
         task.notion_link = dto.notion_link ?? task.notion_link;
+
+        if (task.status == "Completed")
+        {
+            task.progress_percentage = 100;
+        }
+        else
+        {
+            task.progress_percentage = dto.progress_percentage ?? task.progress_percentage;
+        }
+
         task.updated_at = DateTime.UtcNow;
 
-        // Đồng bộ với ClickUp nếu có
-        if (!string.IsNullOrEmpty(task.clickup_id))
+        // Đồng bộ với ClickUp nếu cập nhật từ Dashboard
+        if (!fromClickUp && !string.IsNullOrEmpty(task.clickup_id))
         {
             try
             {
@@ -105,22 +112,24 @@ public class TasksItemController : ControllerBase
 
         await _db.SaveChangesAsync();
 
-        // Gửi thông báo Telegram chỉ khi có thay đổi thực sự
-        bool statusChanged = oldStatus != task.status;
-        bool progressChanged = oldProgress != task.progress_percentage;
+        // Telegram notification chỉ khi có thay đổi
+        if (!fromClickUp) // tránh double message từ webhook
+        {
+            bool statusChanged = oldStatus != task.status;
+            bool progressChanged = oldProgress != task.progress_percentage;
 
-        if (statusChanged)
-        {
-            if (task.status == "Completed")
-                await _telegram.SendMessageAsync($"✅ Task *{task.title}* đã hoàn thành! ({oldStatus} → {task.status}) và đồng bộ ClickUp");
-            else
-                await _telegram.SendMessageAsync($"*{task.title}* đổi trạng thái: `{oldStatus}` → `{task.status}`");
+            if (statusChanged)
+            {
+                if (task.status == "Completed")
+                    await _telegram.SendMessageAsync($"✅ Task *{task.title}* đã hoàn thành! ({oldStatus} → {task.status}) và đồng bộ ClickUp");
+                else
+                    await _telegram.SendMessageAsync($"*{task.title}* đổi trạng thái: `{oldStatus}` → `{task.status}`");
+            }
+            else if (progressChanged)
+            {
+                await _telegram.SendMessageAsync($"*{task.title}* cập nhật tiến độ: `{oldProgress}%` → `{task.progress_percentage}%`");
+            }
         }
-        else if (progressChanged)
-        {
-            await _telegram.SendMessageAsync($"*{task.title}* cập nhật tiến độ: `{oldProgress}%` → `{task.progress_percentage}%`");
-        }
-        // Nếu không có thay đổi về status/progress, không gửi message "vừa được cập nhật nội dung"
 
         return Ok(task);
     }
