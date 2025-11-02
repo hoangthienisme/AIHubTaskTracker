@@ -20,20 +20,35 @@ public class DailyLogJob : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation(" DailyLogJob started at: {time}", DateTime.Now);
+        _logger.LogInformation("DailyLogJob started at: {time}", DateTime.Now);
+
+        var vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var now = DateTime.Now;
-            if (now.Hour == 22)
+            var nowVN = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone);
+
+            // Tính thời gian còn lại đến 22:00:00 hôm nay
+            var today22 = nowVN.Date.AddHours(22);
+            TimeSpan delayTime;
+
+            if (nowVN < today22)
             {
-                await SendDailyLogReport();
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                delayTime = today22 - nowVN;
             }
             else
             {
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                // Nếu đã qua 22h hôm nay, delay đến 22h ngày mai
+                delayTime = today22.AddDays(1) - nowVN;
             }
+
+            _logger.LogInformation("Next daily log will send in {delay} minutes", delayTime.TotalMinutes);
+
+            // Delay đến 22h tiếp theo
+            await Task.Delay(delayTime, stoppingToken);
+
+            // Gửi báo cáo
+            await SendDailyLogReport();
         }
     }
 
@@ -41,6 +56,8 @@ public class DailyLogJob : BackgroundService
     {
         using var scope = _services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        // Lấy thời gian VN hiện tại
         var vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
         var nowVN = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone);
         var todayVN = nowVN.Date;
@@ -50,25 +67,26 @@ public class DailyLogJob : BackgroundService
             .Include(l => l.user)
             .Where(l => l.created_at >= todayUtc)
             .OrderByDescending(l => l.created_at)
+            .Take(20) // chỉ lấy 20 log gần nhất
             .ToListAsync();
 
         if (!logs.Any())
         {
-            await _telegram.SendMessageAsync(" *No logs recorded today.*");
+            await _telegram.SendMessageAsync("*No logs recorded today.*");
             _logger.LogInformation("No logs to send at {time}", DateTime.Now);
             return;
         }
 
         var sb = new StringBuilder();
-        sb.AppendLine(" *DAILY LOG REPORT*");
-        sb.AppendLine($" {DateTime.Now:dd/MM/yyyy HH:mm}\n");
+        sb.AppendLine("*DAILY LOG REPORT*");
+        sb.AppendLine($"_{DateTime.Now:dd/MM/yyyy HH:mm}_\n");
 
-        foreach (var log in logs.Take(20)) // chỉ lấy 20 log gần nhất
+        foreach (var log in logs)
         {
             sb.AppendLine($"- [{log.severity}] {log.content} (by {log.user?.full_name ?? "Unknown"})");
         }
 
         await _telegram.SendMessageAsync(sb.ToString());
-        _logger.LogInformation(" Sent daily log report with {Count} logs", logs.Count);
+        _logger.LogInformation("Sent daily log report with {Count} logs", logs.Count);
     }
 }
