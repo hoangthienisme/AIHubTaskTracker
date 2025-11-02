@@ -63,21 +63,26 @@ public class TasksItemController : ControllerBase
     public async Task<IActionResult> Update(int id, [FromBody] TaskUpdateDto dto)
     {
         var task = await _db.Tasks.FindAsync(id);
-        if (task == null) return NotFound();
+        if (task == null) return NotFound(new { message = $"Task ID {id} không tồn tại." });
 
+        // Lưu giá trị cũ để so sánh
         var oldStatus = task.status;
         var oldProgress = task.progress_percentage;
+
+        // Normalize status
         string NormalizeStatus(string? status) => status?.Trim().ToLower() switch
         {
             "todo" => "To Do",
             "inprogress" => "In Progress",
             "completed" => "Completed",
+            "done" => "Completed",
             _ => task.status
         };
-        // Cập nhật dữ liệu
+
+        // Cập nhật các trường
         task.title = dto.title ?? task.title;
         task.description = dto.description ?? task.description;
-        task.status = dto.status ?? task.status;
+        task.status = dto.status != null ? NormalizeStatus(dto.status) : task.status;
         task.expected_output = dto.expected_output ?? task.expected_output;
         task.deadline = dto.deadline ?? task.deadline;
         task.progress_percentage = dto.progress_percentage ?? task.progress_percentage;
@@ -93,7 +98,6 @@ public class TasksItemController : ControllerBase
             }
             catch (HttpRequestException ex)
             {
-                // Log và thông báo Telegram nhưng không crash PUT
                 Console.WriteLine($"ClickUp update failed: {ex.Message}");
                 await _telegram.SendMessageAsync($"⚠️ ClickUp update thất bại cho task *{task.title}*: {ex.Message}");
             }
@@ -101,25 +105,22 @@ public class TasksItemController : ControllerBase
 
         await _db.SaveChangesAsync();
 
-        // Gửi log Telegram
-        if (oldStatus != task.status)
+        // Gửi thông báo Telegram chỉ khi có thay đổi thực sự
+        bool statusChanged = oldStatus != task.status;
+        bool progressChanged = oldProgress != task.progress_percentage;
+
+        if (statusChanged)
         {
-            await _telegram.SendMessageAsync($"*{task.title}* đổi trạng thái: `{oldStatus}` → `{task.status}`");
+            if (task.status == "Completed")
+                await _telegram.SendMessageAsync($"✅ Task *{task.title}* đã hoàn thành! ({oldStatus} → {task.status}) và đồng bộ ClickUp");
+            else
+                await _telegram.SendMessageAsync($"*{task.title}* đổi trạng thái: `{oldStatus}` → `{task.status}`");
         }
-        else if (oldProgress != task.progress_percentage)
+        else if (progressChanged)
         {
             await _telegram.SendMessageAsync($"*{task.title}* cập nhật tiến độ: `{oldProgress}%` → `{task.progress_percentage}%`");
         }
-        else
-        {
-            await _telegram.SendMessageAsync($"Task *{task.title}* vừa được cập nhật nội dung.");
-        }
-
-        // Nếu Completed thì gửi thông báo đặc biệt
-        if (task.status == "Completed")
-        {
-            await _telegram.SendMessageAsync($"Hoàn thành – Task *{task.title}* đã done và đồng bộ ClickUp!");
-        }
+        // Nếu không có thay đổi về status/progress, không gửi message "vừa được cập nhật nội dung"
 
         return Ok(task);
     }
