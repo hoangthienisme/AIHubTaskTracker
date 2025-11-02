@@ -19,58 +19,47 @@ public class TasksItemController : ControllerBase
         _clickUp = clickUp;
         _telegram = telegram;
     }
-	[HttpPost]
-	public async Task<IActionResult> Create([FromBody] TaskCreateDto dto)
-	{
-		try
-		{
-			string statusValue = dto.status ?? "TO DO";
 
-			var task = new TaskItem
-			{
-				title = dto.title,
-				description = dto.description,
-				assigner_id = dto.assigner_id,
-				assignee_id = dto.assignee_id,
-				collaborators = dto.collaborators ?? new List<int>(),
-				expected_output = dto.expected_output,
-				deadline = dto.deadline,
-				status = statusValue,
-				progress_percentage = dto.progress_percentage,
-				notion_link = dto.notion_link,
-				clickup_id = dto.clickup_id,  // ← NHẬN CLICKUP_ID TỪ DASHBOARD (có thể là placeholder)
-				created_at = DateTime.UtcNow,
-				updated_at = DateTime.UtcNow
-			};
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] TaskCreateDto dto)
+    {
+        try
+        {
+            string statusValue = dto.status ?? "TO DO";
 
-			_db.Tasks.Add(task);
-			await _db.SaveChangesAsync();
+            var task = new TaskItem
+            {
+                title = dto.title,
+                description = dto.description,
+                assigner_id = dto.assigner_id,
+                assignee_id = dto.assignee_id,
+                collaborators = dto.collaborators ?? new List<int>(),
+                expected_output = dto.expected_output,
+                deadline = dto.deadline,
+                status = statusValue,
+                progress_percentage = dto.progress_percentage,
+                notion_link = dto.notion_link,
+                clickup_id = dto.clickup_id,
+                created_at = DateTime.UtcNow,
+                updated_at = DateTime.UtcNow
+            };
 
-			// 🔥 BỎ ĐOẠN NÀY - KHÔNG TẠO CLICKUP TỪ BACKEND NỮA!
-			// var clickUpId = await _clickUp.CreateTaskAsync(task);
-			// if (!string.IsNullOrEmpty(clickUpId))
-			// {
-			//     task.clickup_id = clickUpId;
-			//     _db.Tasks.Update(task);
-			//     await _db.SaveChangesAsync();
-			// }
+            _db.Tasks.Add(task);
+            await _db.SaveChangesAsync();
 
-			// Gửi log Telegram
-			await _telegram.SendMessageAsync($"✅ Task mới được tạo:\n*{task.title}*\nNgười giao: `{task.assigner_id}` → Người nhận: `{task.assignee_id}`");
+            // Bỏ tạo task ClickUp trực tiếp từ backend
+            await _telegram.SendMessageAsync($"✅ Task mới được tạo:\n*{task.title}*\nNgười giao: `{task.assigner_id}` → Người nhận: `{task.assignee_id}`");
 
-			return Ok(task);
-		}
-		catch (Exception ex)
-		{
-			await _telegram.SendMessageAsync($"❌ Lỗi khi tạo task: {ex.Message}");
-			return StatusCode(500, new { message = "Tạo task thất bại", error = ex.Message });
-		}
-	}
+            return Ok(task);
+        }
+        catch (Exception ex)
+        {
+            await _telegram.SendMessageAsync($"❌ Lỗi khi tạo task: {ex.Message}");
+            return StatusCode(500, new { message = "Tạo task thất bại", error = ex.Message });
+        }
+    }
 
-	// =====================
-	// UPDATE TASK
-	// =====================
-	[HttpPut("{id:int}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] TaskUpdateDto dto)
     {
         var task = await _db.Tasks.FindAsync(id);
@@ -91,36 +80,44 @@ public class TasksItemController : ControllerBase
 
         // Đồng bộ với ClickUp nếu có
         if (!string.IsNullOrEmpty(task.clickup_id))
-            await _clickUp.UpdateTaskAsync(task);
+        {
+            try
+            {
+                await _clickUp.UpdateTaskAsync(task);
+            }
+            catch (HttpRequestException ex)
+            {
+                // Log và thông báo Telegram nhưng không crash PUT
+                Console.WriteLine($"ClickUp update failed: {ex.Message}");
+                await _telegram.SendMessageAsync($"⚠️ ClickUp update thất bại cho task *{task.title}*: {ex.Message}");
+            }
+        }
 
         await _db.SaveChangesAsync();
 
         // Gửi log Telegram
         if (oldStatus != task.status)
         {
-            await _telegram.SendMessageAsync($" *{task.title}* đổi trạng thái: `{oldStatus}` → `{task.status}`");
+            await _telegram.SendMessageAsync($"*{task.title}* đổi trạng thái: `{oldStatus}` → `{task.status}`");
         }
         else if (oldProgress != task.progress_percentage)
         {
-            await _telegram.SendMessageAsync($" *{task.title}* cập nhật tiến độ: `{oldProgress}%` → `{task.progress_percentage}%`");
+            await _telegram.SendMessageAsync($"*{task.title}* cập nhật tiến độ: `{oldProgress}%` → `{task.progress_percentage}%`");
         }
         else
         {
-            await _telegram.SendMessageAsync($" Task *{task.title}* vừa được cập nhật nội dung.");
+            await _telegram.SendMessageAsync($"Task *{task.title}* vừa được cập nhật nội dung.");
         }
 
         // Nếu Completed thì gửi thông báo đặc biệt
         if (task.status == "Completed")
         {
-            await _telegram.SendMessageAsync($" Hoàn thành – Task *{task.title}* đã done và đồng bộ ClickUp!");
+            await _telegram.SendMessageAsync($"Hoàn thành – Task *{task.title}* đã done và đồng bộ ClickUp!");
         }
 
         return Ok(task);
     }
 
-    // =====================
-    // GET ALL TASKS
-    // =====================
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? assignee_id)
     {
@@ -133,9 +130,6 @@ public class TasksItemController : ControllerBase
         return Ok(tasks);
     }
 
-    // =====================
-    // GET TASK BY ID
-    // =====================
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -146,9 +140,6 @@ public class TasksItemController : ControllerBase
         return Ok(task);
     }
 
-    // =====================
-    // DELETE TASK
-    // =====================
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -162,50 +153,61 @@ public class TasksItemController : ControllerBase
         await _db.SaveChangesAsync();
 
         if (!string.IsNullOrEmpty(clickUpIdToDelete))
-            await _clickUp.DeleteTaskAsync(clickUpIdToDelete);
+        {
+            try
+            {
+                await _clickUp.DeleteTaskAsync(clickUpIdToDelete);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"ClickUp deletion failed: {ex.Message}");
+                await _telegram.SendMessageAsync($"⚠️ ClickUp deletion thất bại cho task *{title}*: {ex.Message}");
+            }
+        }
 
-        // Gửi log Telegram
-        await _telegram.SendMessageAsync($" Task *{title}* đã bị xóa.");
+        await _telegram.SendMessageAsync($"Task *{title}* đã bị xóa.");
 
         return Ok(new { message = "Xoá task thành công" });
     }
 
-	// =====================
-	// DELETE ALL TASKS WITH TAG
-	// =====================
-	[HttpDelete("cleanup")]
-	public async Task<IActionResult> CleanupOldTasks()
-	{
-		try
-		{
-			// Tìm tất cả tasks có title chứa tag cũ
-			var oldTasks = await _db.Tasks
-				.Where(t => t.title.Contains("[AIHUB_BACKEND]") ||
-						   t.title.Contains("[ahub_backend]"))
-				.ToListAsync();
+    [HttpDelete("cleanup")]
+    public async Task<IActionResult> CleanupOldTasks()
+    {
+        try
+        {
+            var oldTasks = await _db.Tasks
+                .Where(t => t.title.Contains("[AIHUB_BACKEND]") ||
+                            t.title.Contains("[ahub_backend]"))
+                .ToListAsync();
 
-			var count = oldTasks.Count;
+            var count = oldTasks.Count;
 
-			foreach (var task in oldTasks)
-			{
-				// Xóa từ ClickUp nếu có
-				if (!string.IsNullOrEmpty(task.clickup_id))
-				{
-					await _clickUp.DeleteTaskAsync(task.clickup_id);
-				}
+            foreach (var task in oldTasks)
+            {
+                if (!string.IsNullOrEmpty(task.clickup_id))
+                {
+                    try
+                    {
+                        await _clickUp.DeleteTaskAsync(task.clickup_id);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"ClickUp deletion failed: {ex.Message}");
+                        await _telegram.SendMessageAsync($"⚠️ ClickUp deletion thất bại cho task *{task.title}*: {ex.Message}");
+                    }
+                }
 
-				_db.Tasks.Remove(task);
-			}
+                _db.Tasks.Remove(task);
+            }
 
-			await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
+            await _telegram.SendMessageAsync($" Đã dọn dẹp {count} tasks cũ có tag [AIHUB_BACKEND]");
 
-			await _telegram.SendMessageAsync($"🧹 Đã dọn dẹp {count} tasks cũ có tag [AIHUB_BACKEND]");
-
-			return Ok(new { message = $"Đã xóa {count} tasks cũ", count });
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { error = ex.Message });
-		}
-	}
+            return Ok(new { message = $"Đã xóa {count} tasks cũ", count });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }
