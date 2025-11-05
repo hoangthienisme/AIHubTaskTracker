@@ -19,12 +19,12 @@ namespace AIHubTaskTracker.Models
         public string? description { get; set; } //  Mô tả chi tiết nội dung công việc
 
         [ForeignKey("assigner")]
-        public int assigner_id { get; set; } //  Người giao việc (FK -> Member.user_id)
+        public int? assigner_id { get; set; } //  Người giao việc (FK -> Member.user_id)
         [JsonIgnore]
         public Member? assigner { get; set; }
 
         [ForeignKey("assignee")]
-        public int assignee_id { get; set; } //  Người thực hiện chính (FK -> Member.user_id)
+        public int? assignee_id { get; set; } //  Người thực hiện chính (FK -> Member.user_id)
         [JsonIgnore]
         public Member? assignee { get; set; }
 

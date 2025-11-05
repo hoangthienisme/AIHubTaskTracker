@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AIHubTaskTracker.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class updatedb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,11 +37,14 @@ namespace AIHubTaskTracker.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     full_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    avatar_url = table.Column<string>(type: "text", nullable: true),
+                    status = table.Column<int>(type: "integer", nullable: false),
                     password_hash = table.Column<string>(type: "text", nullable: false),
                     role = table.Column<int>(type: "integer", nullable: false),
                     position = table.Column<int>(type: "integer", maxLength: 100, nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    clickup_id = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -82,8 +85,8 @@ namespace AIHubTaskTracker.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     description = table.Column<string>(type: "text", nullable: true),
-                    assigner_id = table.Column<int>(type: "integer", nullable: false),
-                    assignee_id = table.Column<int>(type: "integer", nullable: false),
+                    assigner_id = table.Column<int>(type: "integer", nullable: true),
+                    assignee_id = table.Column<int>(type: "integer", nullable: true),
                     collaborators = table.Column<List<int>>(type: "integer[]", nullable: true),
                     expected_output = table.Column<string>(type: "text", nullable: true),
                     deadline = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -91,7 +94,8 @@ namespace AIHubTaskTracker.Migrations
                     progress_percentage = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    notion_link = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
+                    notion_link = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    clickup_id = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

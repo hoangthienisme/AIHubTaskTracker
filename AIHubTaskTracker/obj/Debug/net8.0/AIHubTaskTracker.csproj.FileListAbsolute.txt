@@ -363,7 +363,6 @@ D:\BE AIHUB\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\refint\AIHubTaskT
 D:\BE AIHUB\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\AIHubTaskTracker.pdb
 D:\BE AIHUB\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\AIHubTaskTracker.genruntimeconfig.cache
 D:\BE AIHUB\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\ref\AIHubTaskTracker.dll
-D:\BE AIHUB\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\bin\Debug\net8.0\appsettings.Development.json
 E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\bin\Debug\net8.0\appsettings.json
 E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\bin\Debug\net8.0\publish\web.config
@@ -549,3 +548,4 @@ E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\ref\
 E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\bin\Debug\net8.0\BCrypt.Net-Next.dll
 E:\AIHUB TASK\TRACKER BE\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\BE AIHUB\AIHubTaskTracker\AIHubTaskTracker\bin\Debug\net8.0\BCrypt.Net-Next.dll
+D:\BE AIHUB\AIHubTaskTracker\AIHubTaskTracker\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

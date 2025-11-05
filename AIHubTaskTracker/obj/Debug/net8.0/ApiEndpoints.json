@@ -126,6 +126,11 @@
         "Name": "dto",
         "Type": "AIHubTaskTracker.DTOs.TaskUpdateDto",
         "IsRequired": true
+      },
+      {
+        "Name": "fromClickUp",
+        "Type": "System.Boolean",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AIHubTaskTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251015061728_UpdateTask")]
-    partial class UpdateTask
+    [Migration("20251105080955_updatedb")]
+    partial class updatedb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,6 +100,13 @@ namespace AIHubTaskTracker.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("user_id"));
 
+                    b.Property<string>("avatar_url")
+                        .HasColumnType("text");
+
+                    b.Property<string>("clickup_id")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
 
@@ -122,6 +129,9 @@ namespace AIHubTaskTracker.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("role")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("status")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("updated_at")
@@ -184,10 +194,10 @@ namespace AIHubTaskTracker.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("task_id"));
 
-                    b.Property<int>("assignee_id")
+                    b.Property<int?>("assignee_id")
                         .HasColumnType("integer");
 
-                    b.Property<int>("assigner_id")
+                    b.Property<int?>("assigner_id")
                         .HasColumnType("integer");
 
                     b.Property<string>("clickup_id")
@@ -270,14 +280,12 @@ namespace AIHubTaskTracker.Migrations
                     b.HasOne("AIHubTaskTracker.Models.Member", "assignee")
                         .WithMany("assigned_tasks")
                         .HasForeignKey("assignee_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("AIHubTaskTracker.Models.Member", "assigner")
                         .WithMany("created_tasks")
                         .HasForeignKey("assigner_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("assignee");
 
