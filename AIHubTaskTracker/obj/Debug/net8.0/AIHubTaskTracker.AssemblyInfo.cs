@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AIHubTaskTracker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9724d34a7cdff14142170301da859af018d51c11")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0889c7b6b7c0b27eed5773ea15ced63f196566ec")]
 [assembly: System.Reflection.AssemblyProductAttribute("AIHubTaskTracker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AIHubTaskTracker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
